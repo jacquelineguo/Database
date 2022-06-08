@@ -1,0 +1,5 @@
+"0","INSERT INTO Faculty (fid,fname,lname,rank) VALUES 
+  (100,""Jose"",""Annunzioto"",""Assistant""),
+  (200,""Dan"",""Feinberg"",""Adjunct""),
+  (300,""Martin"",""Schedlbauer"",""Full""),
+  (400,""Kathleen"",""Durant"",""Assistant"");"

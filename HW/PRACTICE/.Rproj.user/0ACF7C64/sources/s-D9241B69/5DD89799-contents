@@ -1,0 +1,66 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+```{r}
+print(mtcars)
+```
+
+```{r}
+x = mtcars$cyl
+as.array(x)
+```
+
+```{r}
+if("RSQLite" %in% rownames(installed.packages()) == FALSE) {
+  install.packages("RSQLite")
+}
+
+library("RSQLite")
+```
+
+```{r}
+# import data for descriptive statistics, the built-in data frame 'warpbreaks'
+data(warpbreaks)
+
+# summary descriptive statistics
+summary(warpbreaks)
+```
+```{r}
+# import the psych package -- if this fails, then first install the package by uncommenting the next line
+#install.packages("psych")
+```
+
+
+```{r}
+install.packages("psych")
+library(psych)
+
+# detailed descriptive statistics
+describe(warpbreaks)
+```
+```{r}
+plot(x = warpbreaks$breaks, y = warpbreaks$tension)
+```
+```{r}
+qqnorm(warpbreaks$breaks)
+qqnorm(log(warpbreaks$breaks))
+```
+```{r}
+nrow(mtcars)
+ncol(mtcars)
+
+str(mtcars)
+
+mtcars[nrow(mtcars),]
+```
+

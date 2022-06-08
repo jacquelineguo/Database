@@ -1,0 +1,7 @@
+"0","CREATE TABLE MediaDB (
+  name TEXT NOT NULL,
+  level TEXT,
+  chair INTEGER NOT NULL,
+  PRIMARY KEY (name),
+  FOREIGN KEY (chair) REFERENCES Faculty(fid)
+)"

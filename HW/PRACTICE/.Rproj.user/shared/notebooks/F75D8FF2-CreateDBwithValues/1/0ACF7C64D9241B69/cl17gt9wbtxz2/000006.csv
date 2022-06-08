@@ -1,0 +1,8 @@
+"0","library(RSQLite)"
+"0",""
+"0","fpath = ""/Users/jacquelineguo/Documents/sqlite"""
+"0","dbfile = ""MediaDB.db"""
+"0",""
+"0","# if database file already exists, we connect to it, otherwise"
+"0","# we create a new database"
+"0","dbcon <- dbConnect(RSQLite::SQLite(), paste0(fpath,dbfile))"

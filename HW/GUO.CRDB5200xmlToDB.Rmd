@@ -1,0 +1,264 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+### XUAN GUO
+### CS5200
+
+## Assignment Store XML in a Database
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(XML)
+library(RSQLite)
+library(DBI)
+library(knitr)
+
+path <- "/Users/jacquelineguo/Documents/NEU/Spring 2022/CS5200/HW"
+fn <- "Books-v3.xml"
+fpn = paste0(path, fn)
+dbfile <- "book.db"
+dbcon <- dbConnect(RSQLite::SQLite(), dbfile)
+xmlDOM <- xmlParse(fn)
+r <- xmlRoot(xmlDOM)
+numBook <- xmlSize(r)
+```
+
+#### Q1
+
+The ERD as the following (will show the diagram when open the notebook in browser):
+
+<div style="width: 640px; height: 480px; margin: 10px; position: relative;"><iframe allowfullscreen frameborder="0" style="width:640px; height:480px" src="https://lucid.app/documents/embeddedchart/ad719b53-54d3-4c2d-bf20-a1da5c42acf3" id="W0f.BIR~ul1S"></iframe></div>
+
+In case of the loading time is too long, the link of the ERD is: [ERD](https://lucid.app/lucidchart/ad719b53-54d3-4c2d-bf20-a1da5c42acf3/edit?invitationId=inv_3dd01dbd-e7b7-468a-b5ce-1c240d5fb5f9)
+
+#### Q2. Create a SQLite database that implements the schema.
+```{sql connection=dbcon}
+DROP TABLE IF EXISTS Author;
+```
+
+```{sql connection=dbcon}
+DROP TABLE IF EXISTS Genre;
+```
+
+```{sql connection=dbcon}
+DROP TABLE IF EXISTS Book;
+```
+
+```{sql connection=dbcon}
+CREATE TABLE Author (
+aid INTEGER NOT NULL PRIMARY KEY,
+name TEXT
+)
+```
+
+```{sql connection=dbcon}
+CREATE TABLE Genre (
+gid INTEGER NOT NULL PRIMARY KEY,
+category TEXT
+)
+```
+
+```{sql connection=dbcon}
+CREATE TABLE Book (
+id INTEGER NOT NULL PRIMARY KEY,
+aid INTEGER,
+title TEXT,
+edition INTEGER,
+gid INTEGER,
+price TEXT,
+publish_date TEXT,
+description TEXT,
+FOREIGN KEY (aid) REFERENCES Author(aid),
+FOREIGN KEY (gid) REFERENCES Genre(gid)
+)
+```
+
+#### Q3. Load the XML data from the file into R data frames.
+```{r}
+author.df <- data.frame(
+  aid = integer(),
+  name = character(),
+  stringsAsFactors = F
+)
+```
+
+```{r}
+genre.df <- data.frame(
+  gid = integer(),
+  category = character(),
+  stringsAsFactors = F
+)
+```
+
+
+```{r}
+book.df <- data.frame(
+  id = vector (mode = "integer", length = numBook),
+  aid = vector(mode = "integer", length = numBook),
+  title = vector(mode = "character", length = numBook),
+  edition = vector(mode = "integer", length = numBook),
+  gid = vector(mode = "integer", length = numBook),
+  price = vector(mode = "character", length = numBook),
+  publish_date = vector(mode = "character", length = numBook),
+  description = vector(mode = "character", length = numBook)
+)
+```
+
+```{r rowExists}
+rowExists <- function (aChar, aDF)
+{
+  # check if that address is already in the data frame
+  n <- nrow(aDF)
+  
+  if (n == 0)
+  {
+    # data frame is empty, so can't exist
+    return(0)
+  }
+  
+  for (a in 1:n)
+  {
+    # check if all columns match for the character; ignore the aID column
+    if (all(aDF[a,2] == aChar))
+    {
+      # found a match; return it's ID
+      return(a)
+    }
+  }
+  
+  # none matched
+  return(0)
+}
+```
+
+```{r}
+for (i in 1:numBook)
+{
+  abook <- r[[i]]
+  
+  id <- xmlAttrs(abook)
+  
+  au <- xmlValue(abook[[1]])
+  
+  pk.Author <- rowExists(au, author.df[,1:ncol(author.df)])
+  
+  if (pk.Author == 0)
+  {
+    pk.Author <- nrow(author.df) + 1
+    author.df[pk.Author,2:ncol(author.df)] <- au
+    author.df[pk.Author,1] <- pk.Author
+  }
+
+  aid <- pk.Author
+  
+  title <- xmlValue(abook[[2]])
+  
+  if(xmlName(abook[[3]]) == "edition")
+  {
+    edition <- xmlValue(abook[[3]])
+    genre <- xmlValue(abook[[4]])
+    price <- xmlValue(abook[[5]])
+    publish_date <- xmlValue(abook[[6]])
+    description <- xmlValue(abook[[7]])
+  }
+  else
+  {
+    edition <- 1
+    genre <- xmlValue(abook[[3]])
+    price <- xmlValue(abook[[4]])
+    publish_date <- xmlValue(abook[[5]])
+    description <- xmlValue(abook[[6]])}
+  
+  pk.Genre <- rowExists(genre, genre.df[,1:ncol(genre.df)])
+  
+  if (pk.Genre == 0)
+  {
+    pk.Genre <- nrow(genre.df) + 1
+    genre.df[pk.Genre,2:ncol(genre.df)] <- genre
+    genre.df[pk.Genre,1] <- pk.Genre
+  }
+  
+  gid <- pk.Genre
+  
+  book.df[i,]$id <- id
+  book.df[i,]$aid <- aid
+  book.df[i,]$title <- title
+  book.df[i,]$edition <- edition
+  book.df[i,]$gid <- gid
+  book.df[i,]$price <- price
+  book.df[i,]$publish_date <- publish_date
+  book.df[i,]$description <- description
+}
+```
+
+#### Q4. Transform data types as necessary and then save the data frames to the appropriate tables in the database.
+```{r}
+dbWriteTable(dbcon,"Genre",genre.df,overwrite=T)
+dbWriteTable(dbcon,"Author",author.df,overwrite=T)
+dbWriteTable(dbcon,"Book",book.df,overwrite=T)
+```
+
+```{sql connection=dbcon}
+SELECT * FROM Genre LIMIT 5
+```
+
+
+```{sql connection=dbcon}
+SELECT * FROM Book LIMIT 5
+```
+
+```{sql connection=dbcon}
+SELECT * FROM Author LIMIT 5
+```
+
+#### Q5
+A. What is the number of genres have at least three books?
+
+```{sql connection=dbcon}
+SELECT COUNT(*) 
+FROM (
+SELECT gid, COUNT(*) 
+FROM Book
+GROUP BY gid
+HAVING COUNT(id) > 3)
+```
+
+B. What is the most recent year in which a publication was published?
+
+```{sql connection=dbcon}
+SELECT MAX(strftime('%Y', publish_date)) AS mostRecentYear FROM Book
+```
+
+C. Find the number of books and average price for each genre.
+
+```{sql connection=dbcon}
+SELECT B.gid, COUNT(B.id) AS numBooks, AVG(B.price) AS avgPrice, G.category
+FROM Book B
+JOIN Genre G ON B.gid = G.gid
+GROUP BY B.gid
+```
+
+D. List the title and author of all books that are less than 0.8*AVG or more than 1.2*AVG, where AVG is the average price of all books. As a predicate logic expression: { b : books(b) & (b.price < AVG(books.price) | b.price > AVG(books.price)) }
+
+```{sql connection=dbcon}
+SELECT B.title, A.name AS author
+FROM Book B, Author A
+WHERE A.aid = B.aid
+AND (B.price < 0.8 * (SELECT AVG(price) FROM Book) 
+OR B.price > 1.2 * (SELECT AVG(price) FROM Book) )
+```
+
+```{r}
+dbDisconnect(dbcon)
+```
+
+
+
+

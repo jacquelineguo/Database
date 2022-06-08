@@ -1,0 +1,266 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+#### Xuan Guo
+#### CS5200
+
+### Practicum II / Mine a Database
+
+#### Part 1 Load XML
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+#### Show ERD
+
+The ERD as the following (will show the diagram when open the notebook in browser):
+
+<div style="width: 640px; height: 480px; margin: 10px; position: relative;"><iframe allowfullscreen frameborder="0" style="width:640px; height:480px" src="https://lucid.app/documents/embeddedchart/ad719b53-54d3-4c2d-bf20-a1da5c42acf3" id="8G2czl~sgr5J"></iframe></div>
+
+In case of the loading time is too long, the link of the ERD is:
+
+[ERD](https://lucid.app/lucidchart/ad719b53-54d3-4c2d-bf20-a1da5c42acf3/edit?invitationId=inv_3dd01dbd-e7b7-468a-b5ce-1c240d5fb5f9)
+
+#### Connect database
+
+```{r}
+library(XML)
+library(RSQLite)
+library(DBI)
+library(knitr)
+library(dplyr)
+library(dbplyr)
+library(sqldf)
+library(ggplot2)
+library(lubridate)
+
+path <- "/Users/jacquelineguo/Documents/NEU/Spring 2022/CS5200/HW/Practicum II : Mine a Database"
+fn <- "pubmed_sample.xml"
+fpn = paste0(path, fn)
+dbfile <- "pubmed.db"
+dbcon <- dbConnect(RSQLite::SQLite(), dbfile)
+xmlDOM <- xmlParse(fn)
+r <- xmlRoot(xmlDOM)
+```
+
+#### Clean the database
+
+```{sql connection=dbcon}
+DROP TABLE IF EXISTS AuthorList
+```
+
+```{sql connection=dbcon}
+DROP TABLE IF EXISTS Authors
+```
+
+```{sql connection=dbcon}
+DROP TABLE IF EXISTS Journals
+```
+
+```{sql connection=dbcon}
+DROP TABLE IF EXISTS Articles
+```
+
+#### Create tables
+
+```{sql connection=dbcon}
+CREATE TABLE Authors(
+aid INTEGER NOT NULL PRIMARY KEY,
+lastName TEXT,
+firstName TEXT,
+initials TEXT,
+affiliation TEXT
+)
+```
+
+```{sql connection=dbcon}
+CREATE TABLE Journals(
+ISSN INTEGER PRIMARY KEY,
+title TEXT,
+volume INT,
+issue INTEGER,
+pubDate Date
+)
+```
+
+```{sql connection=dbcon}
+CREATE TABLE Articles(
+articleID INTEGER NOT NULL PRIMARY KEY,
+journalID INTEGER NOT NULL,
+articleTitle TEXT,
+dateCreated DATE,
+datePublished DATE
+)
+```
+
+```{sql connection=dbcon}
+CREATE TABLE AuthorList(
+PMID INTEGER,
+authorID INTEGER,
+PRIMARY KEY(PMID,authorID),
+FOREIGN KEY(PMID) REFERENCES Articles(PMID),
+FOREIGN KEY(AuthorID) REFERENCES Authors(aid)
+)
+```
+
+#### Create dataframes
+
+```{r}
+Article <- data.frame(articleID = integer(),
+                      journalID = integer(),
+                      articleTitle = character(),
+                      dateCreated = character(),
+                      datePublished = character(),
+                      stringsAsFactors = F
+                      )
+
+Journal <- data.frame(ISSN = integer(),
+                      title = character(),
+                      volume = character(),
+                      issue = character(),
+                      pubDate = character(),
+                      stringsAsFactors = F
+                      )
+
+Author <- data.frame(aid = integer(),
+                    lastName = character(),
+                    firstName = character(),
+                    initials = character(),
+                    affiliation = character(),
+                    stringsAsFactors = F
+                    )
+
+AuthorList <- data.frame(PMID = integer(),
+                         authorID = integer(),
+                         stringsAsFactors = F
+                         )
+```
+
+#### Parse Journal data from XML file to Journal dataframe
+
+```{r}
+ISSN <- xpathSApply(xmlDOM,"//ISSN",xmlValue)
+title <- xpathSApply(xmlDOM,"//Journal/Title",xmlValue)
+volume <- xpathSApply(xmlDOM,"//Volume",xmlValue)
+issue <- xpathSApply(xmlDOM,"//Issue",xmlValue)
+pubDate <- xpathSApply(xmlDOM,"//PubDate",xmlValue)
+for(i in 1 : length(ISSN)){
+  row <- nrow(Journal) + 1
+  Journal[i, 1] <- ISSN[i]
+  Journal[i, 2] <- title[i]
+  Journal[i, 3] <- volume[i]
+  Journal[i, 4] <- issue[i]
+  Journal[i, 5] <- pubDate[i]
+}
+Journal
+```
+
+#### Parse Article data from XML file to Article dataframe
+
+```{r}
+articleID <- xpathSApply(xmlDOM,"//MedlineCitation/PMID",xmlValue)
+dateCreated <- xpathSApply(xmlDOM,"//MedlineCitation/DateCreated",xmlValue)
+articleTitle <- xpathSApply(xmlDOM,"//ArticleTitle",xmlValue)
+Pub_Year <- xpathSApply(xmlDOM,"//History/PubMedPubDate[@PubStatus='medline']/Year", xmlValue)
+Pub_Month <- xpathSApply(xmlDOM,"//History/PubMedPubDate[@PubStatus='medline']/Month", xmlValue)
+Pub_Day <- xpathSApply(xmlDOM,"//History/PubMedPubDate[@PubStatus='medline']/Day", xmlValue)
+Pub_Hour <- xpathSApply(xmlDOM,"//History/PubMedPubDate[@PubStatus='medline']/Hour", xmlValue)
+Pub_Minute <- xpathSApply(xmlDOM,"//History/PubMedPubDate[@PubStatus='medline']/Minute", xmlValue)
+journalID <-xpathSApply(xmlDOM,"//MedlineCitation/Article/Journal/ISSN",xmlValue)
+
+for(i in 1 : length(articleID)){
+  Article[i, 1] <- articleID[i]
+  Article[i, 2] <- journalID[i]
+  Article[i, 3] <- articleTitle[i]
+  date.temp <-as.Date(dateCreated[i], format = "%Y%m%d")
+  date.temp <- as.character(date.temp)
+  Article[i, 4] <- date.temp
+  pub_date <- paste(Pub_Year[i], Pub_Month[i], Pub_Day[i], Pub_Hour[i], Pub_Minute[i], sep = "-")
+  pub_date <- as_datetime(pub_date, format="%Y-%m-%d-%H-%M")
+  Article[i, 5] <- as.character(pub_date)
+  
+}
+Article
+```
+
+#### Parse Author data from XML file to Author dataframe
+
+```{r}
+lastName <- xpathSApply(xmlDOM,"//LastName",xmlValue)
+firstName <- xpathSApply(xmlDOM,"//ForeName",xmlValue)
+initials <- xpathSApply(xmlDOM,"//Initials",xmlValue)
+aff <- xpathSApply(xmlDOM,"//Author")
+for(i in 1 : length(lastName)){
+  row <- nrow(Author) + 1
+  Author[i,1] <- i
+  Author[i,2] <- lastName[i] 
+  Author[i,3] <- firstName[i]
+  Author[i,4] <- initials[i]
+   if(!is.null(aff[[i]][[4]]))
+    Author[i,5] <- xmlValue(aff[[i]][[4]])
+ 
+}
+Author<-Author %>% distinct(lastName, firstName, .keep_all = TRUE)
+Author
+```
+
+#### Parse AuthorList data from XML file to AuthorList dataframe
+
+```{r}
+options(sqldf.driver = "SQLite")
+PMID <- xpathSApply(xmlDOM,"//MedlineCitation/PMID",xmlValue)
+a<-1
+for(i in 1 : length(PMID)){
+  
+  x <- paste0("//MedlineCitation[PMID='",as.numeric(PMID[i]),"' ]/Article/AuthorList/Author/LastName")
+  y <- paste0("//MedlineCitation[PMID='",as.numeric(PMID[i]),"' ]/Article/AuthorList/Author/ForeName")
+  last_name <- xpathSApply(xmlDOM, x, xmlValue)
+  first_name <- xpathSApply(xmlDOM, y, xmlValue)
+  for(j in 1 : length(last_name)){
+    AuthorList[a,1] <- PMID[i]
+    sqlCmd<-paste0("select aid from Author where lastName=","\"",last_name[j],"\" ","and"," firstName=","\"",first_name[j],"\"")
+    A_ID<-sqldf(sqlCmd)
+    AuthorList[a,2] <- A_ID
+    a<-a+1
+  } 
+}
+AuthorList
+```
+
+#### Write data from dataframes to database tables.
+
+```{r}
+dbWriteTable(dbcon, "Authors", Author, overwrite = T)
+dbWriteTable(dbcon, "Articles", Article, overwrite = T)
+dbWriteTable(dbcon, "Journals", Journal, overwrite = T)
+dbWriteTable(dbcon, "AuthorList", AuthorList, overwrite = T)
+```
+
+```{sql connection=dbcon}
+SELECT * FROM Authors LIMIT 6
+```
+
+```{sql connection=dbcon}
+SELECT * FROM Articles LIMIT 6
+```
+
+```{sql connection=dbcon}
+SELECT * FROM Journals LIMIT 6
+```
+
+```{sql connection=dbcon}
+SELECT * FROM AuthorList LIMIT 6
+```
+```{sql connection=dbcon}
+SELECT PMID, COUNT(authorID) FROM AuthorList
+GROUP BY PMID
+```
+
+```{r}
+dbDisconnect(dbcon)
+```

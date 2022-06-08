@@ -1,0 +1,161 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(RSQLite)
+library(sqldf)
+library(tictoc)
+
+# if database file already exists, we connect to it, otherwise
+# we create a new database
+dbcon <- dbConnect(RSQLite::SQLite(), "/Users/jacquelineguo/Documents/NEU/sqlite/sakila.db")
+```
+
+```{sql connection=dbcon}
+DROP INDEX IF EXISTS emails;
+```
+
+```{sql connection=dbcon}
+DROP INDEX IF EXISTS q4;
+```
+
+```{sql connection=dbcon}
+PRAGMA index_list('CUSTOMER');
+```
+
+```{sql connection=dbcon}
+SELECT * FROM CUSTOMER LIMIT 5;
+```
+
+```{r}
+tic("timing1")
+```
+
+```{sql connection=dbcon}
+SELECT * FROM CUSTOMER
+WHERE email = "CATHERINE.CAMPBELL@sakilacustomer.org"
+```
+
+```{r}
+toc()
+```
+
+
+```{r}
+tic("timing2")
+```
+
+```{sql connection=dbcon}
+SELECT CUSTOMER.first_name, CUSTOMER.last_name, ADDRESS.address, CITY.city
+FROM ((CUSTOMER
+INNER JOIN ADDRESS ON customer.address_id = ADDRESS.address_id)
+INNER JOIN CITY ON address.city_id = city.city_id)
+```
+
+```{r}
+toc()
+```
+
+```{sql connection=dbcon}
+CREATE UNIQUE INDEX emails
+ON CUSTOMER(email);
+```
+
+```{sql connection=dbcon}
+PRAGMA index_list('CUSTOMER');
+```
+
+```{r}
+tic("C_timing1")
+```
+
+```{sql connection=dbcon}
+SELECT * FROM CUSTOMER
+WHERE email = "CATHERINE.CAMPBELL@sakilacustomer.org"
+```
+
+```{r}
+toc()
+```
+
+```{r}
+tic("C_timing3")
+```
+
+```{sql connection=dbcon}
+SELECT COUNT(customer_id) FROM CUSTOMER
+WHERE address_id > 5
+GROUP BY store_id
+```
+```{r}
+toc()
+```
+
+```{r}
+tic("timing4")
+```
+```{sql connection=dbcon}
+SELECT COUNT(customer_id)
+FROM CUSTOMER
+WHERE active = 1
+```
+
+```{r}
+toc()
+```
+
+```{sql connection=dbcon}
+CREATE INDEX q4
+ON CUSTOMER(customer_id, active);
+```
+
+```{r}
+tic("C_timing4")
+```
+```{sql connection=dbcon}
+SELECT COUNT(customer_id)
+FROM CUSTOMER
+WHERE active = 1
+```
+
+```{r}
+toc()
+```
+
+```{r}
+tic("order")
+```
+```{sql connection=dbcon}
+SELECT * FROM CUSTOMER
+ORDER BY last_name
+```
+
+```{r}
+toc()
+```
+
+```{r}
+tic("group")
+```
+```{sql connection=dbcon}
+SELECT * FROM CUSTOMER
+GROUP BY last_name
+```
+
+```{r}
+toc()
+```
+
+```{r}
+dbDisconnect(dbcon)
+```
+

@@ -1,0 +1,199 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+#### Xuan Guo
+#### CS5200
+
+## Assignment 6
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+This is the 6th assignment for course CS5200 Database Management Systems. Using R and SQL to design a database.
+
+### Connect Database
+```{r}
+library(RSQLite)
+
+fpath = "/Users/jacquelineguo/Documents/NEU/sqlite"
+dbfile = "CourseInfo.db"
+
+# if database file already exists, we connect to it, otherwise
+# we create a new database
+dbcon <- dbConnect(RSQLite::SQLite(), paste0(fpath,dbfile))
+```
+
+### Enable Foreign Key
+
+```{sql connection=dbcon}
+PRAGMA foreign_keys = ON;
+```
+
+### Empty Database
+Before creating the tables in database, make sure there is no duplicate tables in the database first.
+
+```{sql connection=dbcon}
+DROP TABLE IF EXISTS Unit
+```
+
+```{sql connection=dbcon}
+DROP TABLE IF EXISTS Course
+```
+
+```{sql connection=dbcon}
+DROP TABLE IF EXISTS Prerequisite
+```
+
+```{sql connection=dbcon}
+DROP TABLE IF EXISTS Lesson
+```
+
+```{sql connection=dbcon}
+DROP TABLE IF EXISTS Subject
+```
+
+### Creating Tables
+
+```{sql connection=dbcon}
+CREATE TABLE Course(
+courseId TEXT NOT NULL,
+title TEXT NOT NULL,
+lengthInDays INTEGER NOT NULL,
+PRIMARY KEY (courseId)
+)
+```
+
+#### First Trigger
+I think we need to create a trigger to verify the input of course ID is all upper
+case. Since we know, in general, all the course ID such as CS5200, CS5800, the
+start letters are all upper case. However, SQL is a case insensitive language,
+so that means user has to type upper case when input course ID. Adding a trigger
+can free users, they can type in whatever upper or lower case. Then we just need
+to convert it to upper case using UPPER() function.
+
+```{sql connection=dbcon}
+CREATE TRIGGER IF NOT EXISTS upper_case
+  AFTER INSERT ON Course
+  BEGIN
+    UPDATE Course
+      SET courseId = UPPER(courseId);
+  END;
+```
+
+```{sql connection=dbcon}
+CREATE TABLE Unit(
+courseId TEXT NOT NULL,
+tid INTEGER NOT NULL,
+PRIMARY KEY(courseId,tid),
+FOREIGN KEY(courseId) REFERENCES Course(courseId),
+FOREIGN KEY(tid) REFERENCES Lesson(tid)
+);
+```
+
+```{sql connection=dbcon}
+CREATE TABLE Lesson(
+tid INTEGER NOT NULL,
+title TEXT NOT NULL,
+lengthInHrs INTEGER NOT NULL,
+subjectId INTEGER NOT NULL,
+pid INTEGER,
+PRIMARY KEY (tid),
+FOREIGN KEY (subjectId) REFERENCES Subject (subjectId)
+)
+```
+
+#### Second Trigger
+From my perspective, I believe that the length in hours value could not be negative
+number or zeros. As we should know that in general the length of a lesson is vary
+from 50 minutes to several hours. So it does not make any sense if the course 
+length is zero hours or negative number. Thus we could create a trigger to 
+verify the length of days before insertion. In addition, creating
+a case that print an error message if the length of days is zero or negative.
+
+```{sql connection=dbcon}
+CREATE TRIGGER IF NOT EXISTS validate
+  BEFORE INSERT ON Lesson
+  BEGIN
+    SELECT
+      CASE
+        WHEN NEW.lengthInHrs <= 0
+        THEN RAISE (ABORT, 'Invalid lengthInHrs')
+      END;
+  END;
+```
+
+```{sql connection=dbcon}
+CREATE TABLE Prerequisite(
+tid INTEGER NOT NULL,
+pid INTEGER NOT NULL,
+PRIMARY KEY (tid, pid),
+FOREIGN KEY (tid) REFERENCES Lesson (tid)
+)
+```
+
+```{sql connection=dbcon}
+CREATE TABLE Subject(
+subjectId INTEGER NOT NULL,
+subject TEXT NOT NULL,
+PRIMARY KEY (subjectId)
+CHECK (subject IN ("ML", "SQL", "R", "JAVA"))
+)
+```
+
+### Insert Table Content
+Check if we can insert all the content successfully.
+
+Here when we insert courseId as "cs5004", it will still show as upper case.
+
+```{sql connection=dbcon}
+INSERT INTO Course (courseId, title, lengthInDays) VALUES
+  ("cs5004", "Object-Oriented Design", 120),
+  ("CS5200", "DBMS", 120),
+  ("CS3200", "Database Design", 110),
+  ("CS5610", "Web Development", 130)
+```
+
+```{sql connection=dbcon}
+SELECT * FROM Course;
+```
+
+```{sql connection=dbcon}
+INSERT INTO Subject (subjectId, subject) VALUES
+  (1, "SQL"),
+  (2, "ML"),
+  (3, "R"),
+  (4, "JAVA")
+```
+
+```{sql connection=dbcon}
+SELECT * FROM Subject;
+```
+
+```{sql connection=dbcon}
+INSERT INTO Lesson (tid, title, lengthInHrs, subjectId, pid) VALUES
+  (1111, "Object-Oriented Design", 1, 4, NULL),
+  (1112, "Database Design", 3, 1, NULL),
+  (1113, "DBMS", 4, 3, 1112),
+  (1115, "Machine Learning", 2, 2, NULL)
+  
+```
+
+```{sql connection=dbcon}
+SELECT * FROM Lesson;
+```
+
+Here we could test if the second trigger will bring the error message of "Invalid
+lengthInHrs".
+
+```{sql connection=dbcon}
+INSERT INTO Lesson (tid, title, lengthInHrs, subjectId, pid) VALUES
+  (1116, "SQL", 0, 4, NULL)
+```
+
+```{r}
+dbDisconnect(dbcon)
+```
+

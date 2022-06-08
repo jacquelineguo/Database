@@ -1,0 +1,94 @@
+---
+title: "Working with R Projects"
+params:
+  category: 6
+  number: 202
+  time: 45
+  level: beginner
+  tags: "r,r studio,primer"
+  description: "Explains the benefits of working with R Projects. Sows how to
+                create a new R Project in R Studio."
+date: "<small>`r Sys.Date()`</small>"
+author: "<small>Martin Schedlbauer</small>"
+email: "m.schedlbauer@neu.edu"
+affilitation: "Northeastern University"
+output: 
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    collapsed: false
+    number_sections: false
+    code_download: true
+    theme: spacelab
+    highlight: tango
+---
+
+---
+title: "<small>`r params$category`.`r params$number`</small><br/><span style='color: #2E4053; font-size: 0.9em'>`r rmarkdown::metadata$title`</span>"
+---
+
+```{r code=xfun::read_utf8(paste0(here::here(),'/R/_insert2DB.R')), include = FALSE}
+```
+
+## Preface
+
+This tutorial presumes that you have R and R Studio installed, or that you have an account on [rstudio.cloud](http://rstudio.cloud). If you do not already have R and/or R Studio you will need to download and install them. You must first install R from [R Project](https://cloud.r-project.org/) and then the R Studio IDE from [R Studio](https://rstudio.com/products/rstudio/download/).
+
+## R Studio Projects
+
+Projects are a better way to manage code rather than creating individual R Notebooks, R Scripts, and other code files. Projects allows all files, including data files, to be managed as a single unit, shared, and version controlled using services such as *git* and *GitHub*.
+
+## Tutorial
+
+The tutorial below demonstrates how to create a project in R Studio and add files to the project.
+
+```{=html}
+<iframe src="https://player.vimeo.com/video/607451374?h=3056e73073" width="480" height="270" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen data-external="1"></iframe>
+```
+**Link to Video**: [Creating Projects in R Studio](https://vimeo.com/607451374){target="_blank"}
+
+------------------------------------------------------------------------
+
+## Files & Resources
+
+```{r zipFiles, echo=FALSE}
+zipName = sprintf("LessonFiles-%s-%s.zip", 
+                 params$category,
+                 params$number)
+
+textALink = paste0("All Files for Lesson ", 
+               params$category,".",params$number)
+
+# downloadFilesLink() is included from _insert2DB.R
+knitr::raw_html(downloadFilesLink(".", zipName, textALink))
+```
+
+------------------------------------------------------------------------
+
+## References
+
+No references.
+
+## Errata
+
+None collected yet. Let us know.
+
+```{=html}
+<script src="https://form.jotform.com/static/feedback2.js" type="text/javascript">
+  new JotformFeedback({
+    formId: "212187072784157",
+    buttonText: "Feedback",
+    base: "https://form.jotform.com/",
+    background: "#F59202",
+    fontColor: "#FFFFFF",
+    buttonSide: "left",
+    buttonAlign: "center",
+    type: false,
+    width: 700,
+    height: 500,
+    isCardForm: false
+  });
+</script>
+```
+```{r code=xfun::read_utf8(paste0(here::here(),'/R/_deployKnit.R')), include = FALSE}
+```

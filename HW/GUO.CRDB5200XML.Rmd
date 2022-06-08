@@ -1,0 +1,48 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+### XUAN GUO
+### CS5200
+
+## Assignment Build XML Structure
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(XML)
+```
+
+```{r parseXML}
+path <- "/Users/jacquelineguo/Documents/NEU/Spring 2022/CS5200/HW"
+xmlFile <- "log.xml"
+
+xmlDoc <- xmlParse(validate = F, file = paste(path, xmlFile, sep = "/"))
+```
+
+Find how many visit of page 200 in the xml file. The answer should be 3.
+```{r}
+xPathEx <- "count(//Visit[@PageREF=200])"
+x <- xpathApply(xmlDoc, xPathEx)
+
+print(x)
+```
+
+Find how many visit of page 100 in the xml file. The answer should be 1.
+```{r}
+xPathEx <- "count(//Visit[@PageREF=100])"
+x <- xpathApply(xmlDoc, xPathEx)
+
+print(x)
+```
+
+Find how many visit of visitor 101 in the xml file. The answer should be 2.
+```{r}
+xPathEx <- "count(//Visit[@VisitorREF=101])"
+x <- xpathApply(xmlDoc, xPathEx)
+
+print(x)
+```
+

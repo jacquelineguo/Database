@@ -1,0 +1,88 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(RMySQL)
+mydb = dbConnect(MySQL(),user='root', password='Poppy6.29', dbname='sakila', host='Jacquelines-MacBook-Pro.local')
+```
+
+```{r}
+library(tictoc)
+```
+
+```{sql connection=mydb}
+SHOW INDEX FROM CUSTOMER
+```
+
+```{sql connection=mydb}
+SELECT * FROM CUSTOMER LIMIT 5;
+```
+
+```{r}
+tic("timing1")
+```
+
+```{sql connection=mydb}
+SELECT * FROM CUSTOMER
+WHERE email = "CATHERINE.CAMPBELL@sakilacustomer.org"
+```
+
+```{r}
+toc()
+```
+
+```{r}
+tic("timing2")
+```
+
+```{sql connection=mydb}
+SELECT CUSTOMER.first_name, CUSTOMER.last_name, ADDRESS.address, CITY.city
+FROM ((CUSTOMER
+INNER JOIN ADDRESS ON customer.address_id = ADDRESS.address_id)
+INNER JOIN CITY ON address.city_id = city.city_id)
+```
+
+```{r}
+toc()
+```
+
+```{r}
+tic("C_timing3")
+```
+
+```{sql connection=mydb}
+SELECT COUNT(customer_id) FROM CUSTOMER
+WHERE address_id > 5
+GROUP BY store_id
+```
+```{r}
+toc()
+```
+
+```{r}
+tic("timing4")
+```
+
+```{sql connection=mydb}
+SELECT COUNT(customer_id)
+FROM CUSTOMER
+WHERE active = 1
+```
+
+```{r}
+toc()
+```
+
+
+```{r}
+dbDisconnect(mydb)
+```
+

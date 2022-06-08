@@ -1,0 +1,26 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+#### Xuan Guo
+#### CS5200
+
+## Assignment 3
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+
+```{r}
+library(RSQLite)
+
+fpath = "/Users/jacquelineguo/Documents/sqlite"
+dbfile = "CourseInfo.db"
+
+# if database file already exists, we connect to it, otherwise
+# we create a new database
+dbcon <- dbConnect(RSQLite::SQLite(), paste0(fpath,dbfile))
+```
+

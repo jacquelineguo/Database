@@ -1,0 +1,115 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+### XUAN GUO
+### CS5200
+
+## Assignment 4
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+### Connect to the database
+
+```{r}
+library(RSQLite)
+
+# if database file already exists, we connect to it, otherwise
+# we create a new database
+dbcon <- dbConnect(RSQLite::SQLite(), "/Users/jacquelineguo/Documents/NEU/sqlite/MediaDB.db")
+```
+
+```{sql connection=dbcon}
+PRAGMA foreign_keys = ON;
+```
+
+```{sql connection=dbcon}
+DROP TABLE invoices
+ON DELETE CASCADE
+```
+
+### Questions
+
+#### Q1. (5 pts) What are the last names, city, and state of all customer who made at least one purchase?
+
+```{sql connection=dbcon}
+SELECT DISTINCT C.LastName, C.City, C.State
+FROM customers C, invoices I
+WHERE C.CustomerId = I.CustomerId
+```
+
+#### Q2. (5 pts) What are the titles of each albums and the artists who created it?
+
+```{sql connection=dbcon}
+SELECT Al.Title, Ar.Name
+FROM albums Al, artists Ar
+WHERE Al.ArtistId = Ar.ArtistId
+```
+
+#### Q3. (10 pts) What are the total number of unique customers for each country, ordered alphabetically by country who made at least one purchase?
+
+```{sql connection=dbcon}
+SELECT COUNT(DISTINCT I.Customerid) as 'NumberOfCustomers', C.Country
+FROM invoices I
+JOIN customers C
+ON I.CustomerId = C.CustomerId
+GROUP BY C.Country
+ORDER BY C.Country
+```
+
+#### Q4. (10 pts) How many customers never made a purchase, i.e., they appear in the customers table but not in the invoices table.
+
+```{sql connection=dbcon}
+SELECT COUNT(DISTINCT C.CustomerId) AS 'NumOfCustomers'
+FROM customers C
+WHERE C.CustomerId NOT IN (SELECT I.CustomerId FROM invoices I)
+```
+
+#### Q5. (10 pts) What are the names of the albums containing the substring "symphony" in the album title?
+
+```{sql connection=dbcon}
+SELECT Title
+FROM albums
+WHERE Title LIKE "%symphony%"
+```
+
+#### Q6. (15 pts) What is the total "price" of all tracks per artist, i.e., add up the "UnitPrice" column in tracks?
+
+```{sql connection=dbcon}
+SELECT SUM(T.UnitPrice) AS 'Total Price', AR.Name
+FROM tracks T
+JOIN albums AL ON AL.AlbumId = T.AlbumId
+JOIN artists AR ON AR.ArtistId = AL.ArtistId
+GROUP BY AR.ArtistId
+```
+
+#### Q7. (20 pts) Which artist(s) published the most tracks, regardless of type and format? List the artist(s) name(s).
+
+```{sql connection=dbcon}
+SELECT MAX(TotalTracks) AS 'MaxTracks', name, ArId AS artistId
+ FROM
+    (SELECT COUNT(T.TrackId) AS 'TotalTracks', AL.AlbumId, AL.ArtistId AS 'ArId', AR.Name AS name
+    FROM artists AR JOIN tracks T JOIN albums AL
+    WHERE T.AlbumId = AL.AlbumId AND AR.ArtistId = ArId
+    GROUP BY AR.ArtistId)
+```
+
+
+#### Q8. (25 pts) What is the total amount of music for each genre (in hours)? List the genre and time rounded to two decimals.
+
+```{sql connection=dbcon}
+SELECT G.Name, ROUND(SUM(T.Milliseconds) * 2.77778e-7, 2) AS 'Time'
+FROM genres G
+JOIN tracks T ON G.GenreId = T.GenreId
+GROUP BY t.GenreId;
+```
+
+```{r}
+dbDisconnect(dbcon)
+```
+
+

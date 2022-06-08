@@ -1,0 +1,7 @@
+"0","CREATE TABLE Faculty(
+  fid INTEGER NOT NULL,
+  fname TEXT NOT NULL,
+  lname TEXT NOT NULL,
+  rank TEXT,
+  PRIMARY KEY (fid)
+)"

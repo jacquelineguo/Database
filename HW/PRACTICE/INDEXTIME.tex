@@ -1,0 +1,674 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={R Notebook},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{R Notebook}
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+\maketitle
+
+This is an \href{http://rmarkdown.rstudio.com}{R Markdown} Notebook.
+When you execute code within the notebook, the results appear beneath
+the code.
+
+Try executing this chunk by clicking the \emph{Run} button within the
+chunk or by placing your cursor inside it and pressing
+\emph{Cmd+Shift+Enter}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(RSQLite)}
+\FunctionTok{library}\NormalTok{(sqldf)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: gsubfn
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: proto
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in doTryCatch(return(expr), name, parentenv, handler): unable to load shared object '/Library/Frameworks/R.framework/Resources/modules//R_X11.so':
+##   dlopen(/Library/Frameworks/R.framework/Resources/modules//R_X11.so, 0x0006): Library not loaded: /opt/X11/lib/libSM.6.dylib
+##   Referenced from: /Library/Frameworks/R.framework/Versions/4.1/Resources/modules/R_X11.so
+##   Reason: tried: '/opt/X11/lib/libSM.6.dylib' (no such file), '/Library/Frameworks/R.framework/Resources/lib/libSM.6.dylib' (no such file), '/Library/Java/JavaVirtualMachines/jdk1.8.0_241.jdk/Contents/Home/jre/lib/server/libSM.6.dylib' (no such file)
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in system2("/usr/bin/otool", c("-L", shQuote(DSO)), stdout = TRUE):
+## running command ''/usr/bin/otool' -L '/Library/Frameworks/R.framework/Resources/
+## library/tcltk/libs//tcltk.so'' had status 1
+\end{verbatim}
+
+\begin{verbatim}
+## Could not load tcltk.  Will use slower R code instead.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(tictoc)}
+
+\CommentTok{\# if database file already exists, we connect to it, otherwise}
+\CommentTok{\# we create a new database}
+\NormalTok{dbcon }\OtherTok{\textless{}{-}} \FunctionTok{dbConnect}\NormalTok{(RSQLite}\SpecialCharTok{::}\FunctionTok{SQLite}\NormalTok{(), }\StringTok{"/Users/jacquelineguo/Documents/NEU/sqlite/sakila.db"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{DROP} \KeywordTok{INDEX} \ControlFlowTok{IF} \KeywordTok{EXISTS}\NormalTok{ emails;}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{DROP} \KeywordTok{INDEX} \ControlFlowTok{IF} \KeywordTok{EXISTS}\NormalTok{ q4;}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{PRAGMA index\_list(}\StringTok{\textquotesingle{}CUSTOMER\textquotesingle{}}\NormalTok{);}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}lllll@{}}
+\caption{0 records}\tabularnewline
+\toprule
+seq & name & unique & origin & partial \\
+\midrule
+\endfirsthead
+\toprule
+seq & name & unique & origin & partial \\
+\midrule
+\endhead
+\bottomrule
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{SELECT} \OperatorTok{*} \KeywordTok{FROM}\NormalTok{ CUSTOMER }\KeywordTok{LIMIT} \DecValTok{5}\NormalTok{;}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0882}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0662}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0809}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0735}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.2647}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0809}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0515}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1471}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1471}}@{}}
+\caption{5 records}\tabularnewline
+\toprule
+\begin{minipage}[b]{\linewidth}\raggedright
+customer\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+store\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+first\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+last\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+email
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+address\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+active
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+create\_date
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+last\_update
+\end{minipage} \\
+\midrule
+\endfirsthead
+\toprule
+\begin{minipage}[b]{\linewidth}\raggedright
+customer\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+store\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+first\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+last\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+email
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+address\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+active
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+create\_date
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+last\_update
+\end{minipage} \\
+\midrule
+\endhead
+1 & 1 & MARY & SMITH &
+\href{mailto:MARY.SMITH@sakilacustomer.org}{\nolinkurl{MARY.SMITH@sakilacustomer.org}}
+& 5 & 1 & 2006-02-14 22:04:36 & 2006-02-15 04:57:20 \\
+2 & 1 & PATRICIA & JOHNSON &
+\href{mailto:PATRICIA.JOHNSON@sakilacustomer.org}{\nolinkurl{PATRICIA.JOHNSON@sakilacustomer.org}}
+& 6 & 1 & 2006-02-14 22:04:36 & 2006-02-15 04:57:20 \\
+3 & 1 & LINDA & WILLIAMS &
+\href{mailto:LINDA.WILLIAMS@sakilacustomer.org}{\nolinkurl{LINDA.WILLIAMS@sakilacustomer.org}}
+& 7 & 1 & 2006-02-14 22:04:36 & 2006-02-15 04:57:20 \\
+4 & 2 & BARBARA & JONES &
+\href{mailto:BARBARA.JONES@sakilacustomer.org}{\nolinkurl{BARBARA.JONES@sakilacustomer.org}}
+& 8 & 1 & 2006-02-14 22:04:36 & 2006-02-15 04:57:20 \\
+5 & 1 & ELIZABETH & BROWN &
+\href{mailto:ELIZABETH.BROWN@sakilacustomer.org}{\nolinkurl{ELIZABETH.BROWN@sakilacustomer.org}}
+& 9 & 1 & 2006-02-14 22:04:36 & 2006-02-15 04:57:20 \\
+\bottomrule
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{tic}\NormalTok{(}\StringTok{"timing1"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{SELECT} \OperatorTok{*} \KeywordTok{FROM}\NormalTok{ CUSTOMER}
+\KeywordTok{WHERE}\NormalTok{ email }\OperatorTok{=} \OtherTok{"CATHERINE.CAMPBELL@sakilacustomer.org"}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0870}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0652}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0797}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0725}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.2754}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0797}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0507}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1449}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1449}}@{}}
+\caption{1 records}\tabularnewline
+\toprule
+\begin{minipage}[b]{\linewidth}\raggedleft
+customer\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+store\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+first\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+last\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+email
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+address\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+active
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+create\_date
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+last\_update
+\end{minipage} \\
+\midrule
+\endfirsthead
+\toprule
+\begin{minipage}[b]{\linewidth}\raggedleft
+customer\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+store\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+first\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+last\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+email
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+address\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+active
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+create\_date
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+last\_update
+\end{minipage} \\
+\midrule
+\endhead
+46 & 2 & CATHERINE & CAMPBELL &
+\href{mailto:CATHERINE.CAMPBELL@sakilacustomer.org}{\nolinkurl{CATHERINE.CAMPBELL@sakilacustomer.org}}
+& 50 & 1 & 2006-02-14 22:04:36 & 2006-02-15 04:57:20 \\
+\bottomrule
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{toc}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## timing1: 0.017 sec elapsed
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{tic}\NormalTok{(}\StringTok{"timing2"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{SELECT}\NormalTok{ CUSTOMER.first\_name, CUSTOMER.last\_name, ADDRESS.address, CITY.city}
+\KeywordTok{FROM}\NormalTok{ ((CUSTOMER}
+\KeywordTok{INNER} \KeywordTok{JOIN}\NormalTok{ ADDRESS }\KeywordTok{ON}\NormalTok{ customer.address\_id }\OperatorTok{=}\NormalTok{ ADDRESS.address\_id)}
+\KeywordTok{INNER} \KeywordTok{JOIN}\NormalTok{ CITY }\KeywordTok{ON}\NormalTok{ address.city\_id }\OperatorTok{=}\NormalTok{ city.city\_id)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.1549}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.1408}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.4930}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2113}}@{}}
+\caption{Displaying records 1 - 10}\tabularnewline
+\toprule
+\begin{minipage}[b]{\linewidth}\raggedright
+first\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+last\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+address
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+city
+\end{minipage} \\
+\midrule
+\endfirsthead
+\toprule
+\begin{minipage}[b]{\linewidth}\raggedright
+first\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+last\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+address
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+city
+\end{minipage} \\
+\midrule
+\endhead
+MARY & SMITH & 1913 Hanoi Way & Sasebo \\
+PATRICIA & JOHNSON & 1121 Loja Avenue & San Bernardino \\
+LINDA & WILLIAMS & 692 Joliet Street & Athenai \\
+BARBARA & JONES & 1566 Inegl Manor & Myingyan \\
+ELIZABETH & BROWN & 53 Idfu Parkway & Nantou \\
+JENNIFER & DAVIS & 1795 Santiago de Compostela Way & Laredo \\
+MARIA & MILLER & 900 Santiago de Compostela Parkway & Kragujevac \\
+SUSAN & WILSON & 478 Joliet Way & Hamilton \\
+MARGARET & MOORE & 613 Korolev Drive & Masqat \\
+DOROTHY & TAYLOR & 1531 Sal Drive & Esfahan \\
+\bottomrule
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{toc}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## timing2: 0.016 sec elapsed
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{CREATE} \KeywordTok{UNIQUE} \KeywordTok{INDEX}\NormalTok{ emails}
+\KeywordTok{ON}\NormalTok{ CUSTOMER(email);}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{PRAGMA index\_list(}\StringTok{\textquotesingle{}CUSTOMER\textquotesingle{}}\NormalTok{);}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rlrlr@{}}
+\caption{1 records}\tabularnewline
+\toprule
+seq & name & unique & origin & partial \\
+\midrule
+\endfirsthead
+\toprule
+seq & name & unique & origin & partial \\
+\midrule
+\endhead
+0 & emails & 1 & c & 0 \\
+\bottomrule
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{tic}\NormalTok{(}\StringTok{"C\_timing1"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{SELECT} \OperatorTok{*} \KeywordTok{FROM}\NormalTok{ CUSTOMER}
+\KeywordTok{WHERE}\NormalTok{ email }\OperatorTok{=} \OtherTok{"CATHERINE.CAMPBELL@sakilacustomer.org"}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0870}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0652}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0797}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0725}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.2754}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0797}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0507}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1449}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1449}}@{}}
+\caption{1 records}\tabularnewline
+\toprule
+\begin{minipage}[b]{\linewidth}\raggedleft
+customer\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+store\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+first\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+last\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+email
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+address\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+active
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+create\_date
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+last\_update
+\end{minipage} \\
+\midrule
+\endfirsthead
+\toprule
+\begin{minipage}[b]{\linewidth}\raggedleft
+customer\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+store\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+first\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+last\_name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+email
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+address\_id
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+active
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+create\_date
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+last\_update
+\end{minipage} \\
+\midrule
+\endhead
+46 & 2 & CATHERINE & CAMPBELL &
+\href{mailto:CATHERINE.CAMPBELL@sakilacustomer.org}{\nolinkurl{CATHERINE.CAMPBELL@sakilacustomer.org}}
+& 50 & 1 & 2006-02-14 22:04:36 & 2006-02-15 04:57:20 \\
+\bottomrule
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{toc}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## C_timing1: 0.017 sec elapsed
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{tic}\NormalTok{(}\StringTok{"C\_timing3"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{SELECT} \FunctionTok{COUNT}\NormalTok{(customer\_id) }\KeywordTok{FROM}\NormalTok{ CUSTOMER}
+\KeywordTok{WHERE}\NormalTok{ address\_id }\OperatorTok{\textgreater{}} \DecValTok{5}
+\KeywordTok{GROUP} \KeywordTok{BY}\NormalTok{ store\_id}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}r@{}}
+\caption{2 records}\tabularnewline
+\toprule
+COUNT(customer\_id) \\
+\midrule
+\endfirsthead
+\toprule
+COUNT(customer\_id) \\
+\midrule
+\endhead
+325 \\
+273 \\
+\bottomrule
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{toc}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## C_timing3: 0.01 sec elapsed
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{tic}\NormalTok{(}\StringTok{"timing4"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{SELECT} \FunctionTok{COUNT}\NormalTok{(customer\_id)}
+\KeywordTok{FROM}\NormalTok{ CUSTOMER}
+\KeywordTok{WHERE}\NormalTok{ active }\OperatorTok{=} \DecValTok{1}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}r@{}}
+\caption{1 records}\tabularnewline
+\toprule
+COUNT(customer\_id) \\
+\midrule
+\endfirsthead
+\toprule
+COUNT(customer\_id) \\
+\midrule
+\endhead
+584 \\
+\bottomrule
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{toc}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## timing4: 0.013 sec elapsed
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{CREATE} \KeywordTok{INDEX}\NormalTok{ q4}
+\KeywordTok{ON}\NormalTok{ CUSTOMER(customer\_id, active);}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{tic}\NormalTok{(}\StringTok{"C\_timing4"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{SELECT} \FunctionTok{COUNT}\NormalTok{(customer\_id)}
+\KeywordTok{FROM}\NormalTok{ CUSTOMER}
+\KeywordTok{WHERE}\NormalTok{ active }\OperatorTok{=} \DecValTok{1}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}r@{}}
+\caption{1 records}\tabularnewline
+\toprule
+COUNT(customer\_id) \\
+\midrule
+\endfirsthead
+\toprule
+COUNT(customer\_id) \\
+\midrule
+\endhead
+584 \\
+\bottomrule
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{toc}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## C_timing4: 0.011 sec elapsed
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{dbDisconnect}\NormalTok{(dbcon)}
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}

@@ -1,0 +1,70 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+### XUAN GUO
+### CS5200
+
+## Assignment 9
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(XML)
+```
+
+```{r parseXML}
+path <- "/Users/jacquelineguo/Documents/NEU/Spring 2022/CS5200/HW"
+xmlFile <- "Books-v3.xml"
+
+xmlDoc <- xmlParse(validate = F, file = paste(path, xmlFile, sep = "/"))
+```
+
+1. What are the titles of all books written by "Galos, Mike"? List the titles and the prices.
+
+```{r}
+xPathEx <- "//book[author='Galos, Mike']/title/text()|//catalog/book[author='Galos, Mike']/price/text()"
+x <- xpathApply(xmlDoc, xPathEx)
+
+print(x)
+```
+
+2. In what genre is the book with id "bk109".
+
+```{r}
+xPathEx <- "//book[@id='bk109']/genre/text()"
+x <- xpathApply(xmlDoc, xPathEx)
+
+print(x)
+```
+
+3. What are the titles of the books that sell for the lowest price? (Use the min aggregation function)
+
+```{r}
+xPathEx <- "//book[price=min(//book/price)]/title/text()"
+x <- xpathApply(xmlDoc, xPathEx)
+
+print(x)
+```
+
+4. List the title and prices of all books in the "Computer" genre.
+
+```{r}
+xPathEx <- "//book[genre='Computer']/title/text()|//book[genre='Computer']/price/text()"
+x <- xpathApply(xmlDoc, xPathEx)
+
+print(x)
+```
+
+5. What is the number of all books that cost less than $5? (Use the count aggregation function)
+
+```{r}
+xPathEx <- "count(//book[price<5])"
+x <- xpathApply(xmlDoc, xPathEx)
+
+print(x)
+```

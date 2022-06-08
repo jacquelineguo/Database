@@ -1,0 +1,83 @@
+---
+title: "Creating a new SQLite database using code chunks"
+output: html_notebook
+---
+
+# Motivation
+
+This tutorial uses SQL code chunks in R Studio to create a new
+SQLite database, create several tables, insert sample data, 
+and tests the database via simple data retrievals.
+
+```{r}
+library(RSQLite)
+
+fpath = "/Users/jacquelineguo/Documents/sqlite"
+dbfile = "MediaDB.db"
+
+# if database file already exists, we connect to it, otherwise
+# we create a new database
+dbcon <- dbConnect(RSQLite::SQLite(), paste0(fpath,dbfile))
+```
+
+```{sql connection=dbcon}
+DROP TABLE IF EXISTS Faculty
+```
+
+
+```{sql connection=dbcon}
+CREATE TABLE Faculty(
+  fid INTEGER NOT NULL,
+  fname TEXT NOT NULL,
+  lname TEXT NOT NULL,
+  rank TEXT,
+  PRIMARY KEY (fid)
+)
+```
+
+More information on SQL: (https://www.tutorialspoint.com/sqlite/sqlite_create_table.htm)
+
+```{sql connection=dbcon}
+SELECT * FROM Faculty;
+```
+
+```{sql connection=dbcon}
+DROP TABLE IF EXISTS MediaDB
+```
+
+```{sql connection=dbcon}
+CREATE TABLE MediaDB (
+  name TEXT NOT NULL,
+  level TEXT,
+  chair INTEGER NOT NULL,
+  PRIMARY KEY (name),
+  FOREIGN KEY (chair) REFERENCES Faculty(fid)
+)
+```
+
+```{sql connection=dbcon}
+SELECT * FROM MediaDB;
+```
+
+```{sql connection=dbcon}
+INSERT INTO Faculty (fid,fname,lname,rank) VALUES 
+  (100,"Jose","Annunzioto","Assistant"),
+  (200,"Dan","Feinberg","Adjunct"),
+  (300,"Martin","Schedlbauer","Full"),
+  (400,"Kathleen","Durant","Assistant");
+```
+
+```{sql connection=dbcon}
+INSERT INTO MediaDB VALUES 
+  ("Hiring","College",300),
+  ("Merit","College", 300),
+  ("Teaching","Department",400)
+```
+
+
+More on insert: (https://www.sqlitetutorial.net/sqlite-insert/)
+
+```{r}
+dbDisconnect(dbcon)
+```
+

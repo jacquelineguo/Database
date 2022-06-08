@@ -1,0 +1,252 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+#### Xuan Guo
+#### CS5200
+
+### Practicum II / Mine a Database
+
+#### Part 2 Create Star/Snowflake Schema
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+## Part II
+## Create Data Warehouse According  Star Schema
+
+#### ERD for my design:
+
+<div style="width: 640px; height: 480px; margin: 10px; position: relative;"><iframe allowfullscreen frameborder="0" style="width:640px; height:480px" src="https://lucid.app/documents/embeddedchart/9e2d020c-83d3-4e7c-96eb-b653b2fdafb7" id="jD_c-.vS5G3a"></iframe></div>
+
+In case of the loading time is too long, the link of the ERD is:
+
+[ERD](https://lucid.app/lucidchart/9e2d020c-83d3-4e7c-96eb-b653b2fdafb7/edit?invitationId=inv_b247cb1a-7155-4a32-a2ad-c17d89f3210d)
+
+#### Connect to the library and database
+
+```{r}
+# 1. Library
+library(RMySQL)
+
+mydb <-  dbConnect(MySQL(),user="root",
+                 host="localhost",
+                 dbname="Practicum",
+                 password="Poppy6.29")
+```
+
+```{r}
+library(RSQLite)
+library(DBI)
+
+dbfile <- "pubmed.db"
+dbcon <- dbConnect(RSQLite::SQLite(), dbfile)
+```
+
+#### Clean the database
+
+```{sql connection=mydb}
+DROP TABLE IF EXISTS AuthorFact;
+```
+
+```{sql connection=mydb}
+DROP TABLE IF EXISTS ArticleDim;
+```
+
+```{sql connection=mydb}
+DROP TABLE IF EXISTS AffiliationDim;
+```
+
+#### Create tables
+
+```{sql connection=mydb}
+CREATE TABLE ArticleDim (
+articleID INT PRIMARY KEY,
+journalID INT,
+articleTitle VARCHAR(200),
+dateCreated DATE,
+datePublished DATE
+)
+```
+
+```{sql connection=mydb}
+CREATE TABLE AffiliationDim (
+Affiliation_ID INT PRIMARY KEY,
+Affiliation VARCHAR(200)
+)
+```
+
+#### Create AuthorFact table, here I use articleID and authorID as composite primary key. articleID and affiliation as foreign key. Then write to the database.
+
+```{sql connection=mydb}
+CREATE TABLE AuthorFact (
+articleID INT,
+authorID INT,
+lastName VARCHAR(32),
+firstName VARCHAR(32),
+initials VARCHAR(32),
+affiliation INT,
+yearPublished INT,
+ArticleCount INT,
+AvgArticleCountPerYear INT,
+PRIMARY KEY (articleID, authorID),
+FOREIGN KEY (articleID) REFERENCES ArticleDim(articleID),
+FOREIGN KEY (affiliation) REFERENCES AffiliationDim(Affiliation_ID)
+)
+```
+
+#### Load data from Part I
+
+```{r}
+sqlCmd <- "select * from AuthorList"
+list.df <- dbGetQuery(dbcon, sqlCmd)
+```
+
+#### Write data into ArticleDim table
+
+```{r}
+sqlCmd <- "select * from Article"
+article.df <- dbGetQuery(dbcon, sqlCmd)
+
+dbSendQuery(mydb, "SET GLOBAL local_infile = true;")
+dbWriteTable(mydb, name="ArticleDim", value=article.df, overwrite=F, row.names = F, append=T)
+```
+
+#### Get data to write into AffiliationDim table
+
+```{r}
+sqlCmd <- "select * from Author"
+author.temp <- dbGetQuery(dbcon, sqlCmd)
+```
+
+```{r}
+affiliation.df <- data.frame(Affiliation_ID = integer(),
+                             Affiliation = character(),
+                             stringsAsFactors = F)
+```
+
+```{r}
+affiliation.content <- author.temp[(!(is.na(author.temp$affiliation))),]
+
+affiliation.content <- affiliation.content[!duplicated(affiliation.content[ , c("affiliation")]),]
+affiliation.content <- affiliation.content["affiliation"]
+
+for(i in 1 : nrow(affiliation.content)){
+  affiliation.df[i, 1] <- i
+  affiliation.df[i, 2] <- affiliation.content[i, 1]
+}
+
+```
+
+```{r}
+dbSendQuery(mydb, "SET GLOBAL local_infile = true;")
+dbWriteTable(mydb, name="AffiliationDim", value=affiliation.df, overwrite=F, row.names = F, append=T)
+```
+
+#### Prepare AuthorFact table, firstly insert affiliationID instead of affiliation.
+
+```{r}
+author_affiliation.df <- data.frame(AuthorID = integer(),
+                                    Affiliation_ID = integer(),
+                                    stringsAsFactors = F)
+```
+
+```{r}
+author.with.aff <- author.temp[(!(is.na(author.temp$affiliation))),]
+author.with.unique.aff <- author.with.aff[!duplicated(author.with.aff[ , c("lastName","firstName", "affiliation")]),]
+for(i in 1 : nrow(author.with.unique.aff)){
+  for(j in 1: nrow(author.temp)) {
+    if(author.with.unique.aff[i, 1] == author.temp[j, 1]) {
+      author_affiliation.df[i, 1] <- author.temp[j, 1]
+    }
+  }
+  
+  for(k in 1: nrow(affiliation.df)) {
+    if(author.with.unique.aff[i, 5] == affiliation.df[k, 2]) {
+      author_affiliation.df[i, 2] <- affiliation.df[k, 1]
+    }
+  }
+}
+```
+
+```{r}
+for(i in 1: nrow(author.temp)) {
+  for(j in 1: nrow(author_affiliation.df)) {
+    if(author.temp[i, 1] == author_affiliation.df[j, 1]) {
+      author.temp[i, 5] <- author_affiliation.df[j, 2]
+    }
+  }
+}
+```
+
+#### Then insert articleID and datePublished according to AuthorList dataframe
+
+```{r}
+colnames(author.temp)[1] <- "authorID"
+colnames(list.df)[1] <- "articleID"
+author.df <- merge(author.temp,list.df,by="authorID")
+author.df
+```
+
+```{r}
+article.df$yearPublished <- format(as.Date(article.df$datePublished, format="%Y"), "%Y")
+author.df <- merge(author.df, article.df[c("articleID", "yearPublished")] ,by="articleID")
+```
+
+#### Insert ArticleCount column
+
+```{r}
+author.df$ArticleCount <- with(author.df, ave(authorID, authorID, FUN=length))
+head(author.df[order(author.df$authorID),])
+```
+
+#### Insert AvgArticleCountPerYear column
+
+```{r}
+num = max(as.numeric(author.df$yearPublished)) -min(as.numeric(author.df$yearPublished)) + 1
+author.df$AvgArticleCountPerYear <- with(author.df, ave(authorID, authorID, FUN=function(x) length(x)/num))
+head(author.df[order(author.df$authorID),])
+```
+
+
+
+```{r}
+dbSendQuery(mydb, "SET GLOBAL local_infile = true;")
+dbWriteTable(mydb, name="AuthorFact", value=author.df, overwrite=T, row.names = F)
+```
+
+#### Show result
+
+```{sql connection=mydb}
+SELECT * FROM ArticleDim 
+```
+
+
+```{sql connection=mydb}
+SELECT * FROM AffiliationDim 
+```
+
+
+```{sql connection=mydb}
+SELECT * FROM AuthorFact LIMIT 10
+```
+
+## Part III
+
+```{sql connection=mydb}
+SELECT DISTINCT authorID, lastName, firstName, ArticleCount
+FROM AuthorFact
+ORDER BY ArticleCount DESC
+LIMIT 10
+```
+```{r}
+dbDisconnect(dbcon)
+```
+
+```{r}
+dbDisconnect(mydb)
+```

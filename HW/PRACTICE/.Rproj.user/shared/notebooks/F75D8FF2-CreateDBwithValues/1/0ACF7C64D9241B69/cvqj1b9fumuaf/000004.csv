@@ -1,0 +1,4 @@
+"0","INSERT INTO MediaDB VALUES 
+  (""Hiring"",""College"",300),
+  (""Merit"",""College"", 300),
+  (""Teaching"",""Department"",400)"
